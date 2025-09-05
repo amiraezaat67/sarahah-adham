@@ -35,14 +35,13 @@ export const sendEmail = async (
         attachments,
     
     });
-console.log('info',info);
-return info;
-    };
+    console.log('info',info); // remove all un-necessary logs
+    return info;
+};
 
 
 
 export const eventEmitter = new EventEmitter();
-
 
 eventEmitter.on("emailSent",(args) => {
     console.log("sending email event is started");

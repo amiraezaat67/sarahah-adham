@@ -9,11 +9,19 @@ export const authenticationMiddleware = async (req,res,next) => {
         return next(new Error('No access token found' , {cause:400}));
     }
 
+    /**
+     * @commet : remove the commented code 
+     */
     // if (!accesstoken.startsWith(process.env.JWT_PREFIX)){
     //     return next(new Error('Invalid access token' , {cause:400}));
     // } 
-    // const token = accesstoken.split(" ")[1]
+    // const token = accesstoken.split(" ")[1] 
     const [prefix ,token] = accesstoken.split(" ")
+    /**
+     * @commet : remove the prefix if you don't need it
+     * const [__ ,token] = accesstoken.split(" ")
+     */
+    
 
     const decodedData = verifyToken(token,process.env.JWT_SECRET_ACCESS);
     if (!decodedData){
@@ -32,6 +40,10 @@ export const authenticationMiddleware = async (req,res,next) => {
         return next(new Error('User not found' , {cause:400}));
     }
 
+    /**
+     * @commet : the user object here will  hold the returned document from the DB so if we need to get the
+        id of the user in any place we can get it from [_id] field not [id] so, const {_id} = req.loggedInUser.user
+     */ 
     req.loggedInUser = {user,token: { tokenId: decodedData.jti, expiresAt: decodedData.exp }};
 
     next();

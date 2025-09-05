@@ -3,6 +3,9 @@ import { GenderEnum } from "../../Common/enums/user.enum.js";
 import { skillsLevelEnum } from "../../Common/enums/user.enum.js";
 
 
+/**
+ * @commet : why we need to validate the testArrays field , Skills field ?????????
+ */
 export const signupSchema = {
     body: Joi.object({
     firstName:Joi.string().min(3).max(20).required().alphanum().messages({

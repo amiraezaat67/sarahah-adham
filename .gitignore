@@ -3,3 +3,8 @@ node_modules
 cry.png.jpg
 
 .env
+
+
+// ignore all pem files
+*.pem
+

@@ -7,7 +7,7 @@ export const validationMiddleware = (schema) => {
         const validationErrors = []
 
         for(const key of reqkeys){
-            console.log(key)
+            console.log(key) // remove all un-necessary logs
 
             if(schema[key]){
                 const {error} = schema[key].validate(req[key],{abortEarly:false});

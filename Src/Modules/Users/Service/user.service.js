@@ -64,7 +64,7 @@ export const signup = async (req, res) => {
         email,
         password:hashedPassword,
         phoneNumber:encryptedPhoneNumber,
-        otp:{confirmation:bcrypt.hashSync(otp,+process.env.SALT_ROUNDS)} // OTP hashed
+        otp:{confirmation: bcrypt.hashSync(otp,+process.env.SALT_ROUNDS)} // OTP hashed
     })
 
     await userinstance.save()
@@ -98,20 +98,34 @@ export const confirmotp = async (req, res ,next) => {
 
 // ------------------ UPDATE USER ------------------
 export const update = async (req ,res,next) =>{
+    /** @commet : remove all logs */
     console.log(req.loggedInUser)
-    const {id} = req.loggedInUser
-    const {firstName,lastName,age,gender,email,} = req.body;
 
+    /**
+     * @commet : the user object here will hold the returned document from the DB so if we need to get the
+        id of the user, we can get it from [_id] field not [id] so, const {_id} = req.loggedInUser.user
+     */ 
+    const {id} = req.loggedInUser
+    const {firstName,lastName,age,gender,email} = req.body;
+
+
+    /** 
+     * @commet : what if the user enter an existing email ???
+        * we need to check if new email is already exist before or not ??
+     */
+    
+    const updateObject = {firstName , lastName , age , gender}
+    if(email){
+        const isEmailExist = await User.findOne({email})
+        if(isEmailExist){
+            return next(new Error('Email already exists' , {cause:400}));
+        }
+        updateObject.email = email
+    }
 
     const user = await User.findByIdAndUpdate(
         id,
-        {
-            firstName,
-            lastName,
-            age,
-            gender,
-            email,
-        },
+        updateObject,
         {
             new:true
         }
@@ -131,7 +145,7 @@ export const deleteuser = async (req, res) => {
         const session = await mongoose.startSession()
         req.session = session
         const { user: { id } } = req.loggedInUser
-        console.log(id);
+        console.log(id); /* @commet : remove all logs */
     
         // start transaction
         session.startTransaction()
@@ -147,6 +161,8 @@ export const deleteuser = async (req, res) => {
         session.commitTransaction()
         // end session
         session.endSession()
+
+        /** @commet :  remove all the commented code before commiting */
         // console.log(`The transaction is commited`);
     
         return res.status(200).json({ message: "User deleted successfully", deletedUser })
@@ -159,6 +175,9 @@ export const deleteuser = async (req, res) => {
 // ------------------ LIST USERS ----------------
 export const ListUserService = async (req ,res) =>{
     let users = await User.find().populate("Messages")
+    /**
+     * @commet : if you don't need this code so remove it before commiting not keep it as comment
+     */
     // users = users.map(user => {
     //     return {
     //         ...user._doc, 
@@ -175,6 +194,7 @@ export const ListUserService = async (req ,res) =>{
 export const Signin = async (req ,res) =>{
     const {email,password} = req.body;
 
+    /** @commet : don't change the responses the bothe responses must be the same for security reasons */
     const userinstance = await User.findOne({email})
     if(!userinstance){
         return res.status(404).json({ message:"User not found" });
@@ -210,15 +230,22 @@ export const Signin = async (req ,res) =>{
 
 
 //------------------logout---------------------
+/**
+ * @commet : we need to revoke the refresh token also here not the access token only
+ */
 export const logout = async (req ,res) =>{
 
-    const {token:{tokenId,expiresAt}, user:{id}} = req.loggedInUser;
+    /**
+     * @commet : the user object here will hold the returned document from the DB so if we need to get the
+        id of the user, we can get it from [_id] field not [id] so, const {_id} = req.loggedInUser.user
+     */ 
+    const {token:{tokenId,expiresAt}, user:{_id}} = req.loggedInUser;
 
     // convert expiration field to be in date
     await BlacklistedTokens.create({
         tokenId,
         expiresAt:new Date(expiresAt*1000),
-        userId:id
+        userId:_id
     })
     
     res.status(200).json({ message:"User logged out successfully" });
@@ -226,6 +253,10 @@ export const logout = async (req ,res) =>{
 }
 
 
+// ------------------ REFRESH TOKEN ------------------
+/**
+ * @commet :It's better to create  a new middleware for verifying the refresh token because you will need it on the logout also
+ */
 export const refreshToken = async (req ,res) =>{
     const {refreshtoken} = req.headers;
 

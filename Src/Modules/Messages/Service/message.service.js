@@ -5,11 +5,13 @@ export const sendMessage = async (req,res) => {
     const {content} = req.body;
     const {receiverId} = req.params;
 
+    // check if user exists
     const user = await User.findById(receiverId);
     if (!user){
         return res.status(404).json({ message:"User not found" });
     }
     
+    // create message instance
     const messageinstance = new Message({
         content,
         receiver:receiverId,

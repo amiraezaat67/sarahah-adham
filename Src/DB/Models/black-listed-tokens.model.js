@@ -1,13 +1,6 @@
 
 import mongoose from "mongoose";
 
-
-
-
-
-
-
-
 const blacklistedTokensSchema = new mongoose.Schema({
     tokenId:{
         type:String,
